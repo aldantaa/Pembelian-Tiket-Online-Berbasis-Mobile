@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PageController; // Wajib ditambahkan di Laravel 11
 
+<<<<<<< HEAD
 Route::get('/', [PageController::class, 'index']);
 Route::get('/adminDashboard', [PageController::class, 'adminDashboard']);
 Route::get('/booking', [PageController::class, 'booking']);
@@ -16,3 +17,8 @@ Route::get('/register', [PageController::class, 'register']);
 Route::get('/search', [PageController::class, 'search']);
 Route::get('/seatSelection', [PageController::class, 'seatSelection']);
 Route::get('/home', [PageController::class, 'home']);
+=======
+Route::get('/', function () {
+    return view('Search'); // sesuaikan nama file, perhatikan huruf besar/kecil
+});
+>>>>>>> origin/ui/ux
