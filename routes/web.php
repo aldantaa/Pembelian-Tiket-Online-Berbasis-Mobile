@@ -3,19 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PageController;
 
-Route::get('/', [PageController::class, 'landing']);
+Route::view('/register', 'auth.register')->name('register');
+Route::view('/login', 'auth.login')->name('login');
+Route::get('/jadwal', [PageController::class, 'schedules'])->name('schedules');
+Route::get('/tiket-saya', [PageController::class, 'tickets'])->name('tickets');
 
-
-Route::get('/adminDashboard', [PageController::class, 'adminDashboard']);
-Route::get('/booking', [PageController::class, 'booking']);
-Route::get('/eTicket', [PageController::class, 'eTicket']);
-Route::get('/login', [PageController::class, 'login']);
-Route::get('/orderHistory', [PageController::class, 'orderHistory']);
-Route::get('/payment', [PageController::class, 'payment']);
-Route::get('/profile', [PageController::class, 'profile']);
-Route::get('/register', [PageController::class, 'register']);
-Route::get('/search', [PageController::class, 'search']);
-Route::get('/seatSelection', [PageController::class, 'seatSelection']);
-Route::get('/home', [PageController::class, 'home']);
-Route::get('/about', [PageController::class, 'about']);
-Route::get('/service', [PageController::class, 'service']);
