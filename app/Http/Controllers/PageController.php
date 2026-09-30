@@ -9,9 +9,8 @@ use Illuminate\Support\Str;
  * Registrasi, login, logout, dan profil.
  * Sementara memakai session; ganti dengan Auth Laravel + tabel penumpang saat DB siap.
  */
-class AuthController extends Controller
+class PageController extends Controller
 {
-<<<<<<< Updated upstream
     public function index() {
         return view('home');
     }
@@ -23,8 +22,7 @@ class AuthController extends Controller
     public function service() {
         return view('service');
     }
-}
-=======
+
     public function register(Request $r)
     {
         return redirect()->route('login')->with('success', 'Akun berhasil dibuat. Silakan masuk.');
@@ -102,4 +100,3 @@ class AuthController extends Controller
         return ['bus' => $bus, 'seats' => $seats, 'total' => $bus['price'] * count($seats)];
     }
 }
->>>>>>> Stashed changes
