@@ -1,0 +1,24 @@
+.container { width: 100%; max-width: 960px; margin: 0 auto; padding: 1.5rem 1rem 3rem; flex: 1; }
+.navbar { background: var(--card); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 10; }
+.navbar__inner { max-width: 960px; margin: 0 auto; padding: .75rem 1rem; display: flex; justify-content: space-between; align-items: center; }
+.navbar__menu { display: flex; gap: 1.25rem; align-items: center; }
+.navbar__menu a:not(.btn) { color: var(--muted); font-weight: 500; }
+.navbar__menu a.is-active { color: var(--primary); }
+.logo { display: flex; align-items: center; gap: .5rem; font-weight: 700; color: var(--ink); }
+.logo__mark { background: var(--primary); color: #fff; border-radius: 8px; padding: .15rem .45rem; font-size: .85rem; }
+.footer { text-align: center; padding: 1.5rem 1rem; color: var(--muted); font-size: .85rem; border-top: 1px solid var(--line); }
+.two-col { display: grid; grid-template-columns: 1fr 320px; gap: 1rem; align-items: start; }
+.grid { display: grid; gap: 1rem; }
+@media (max-width: 720px) { .two-col { grid-template-columns: 1fr; } .navbar__menu { gap: .75rem; } }
+
+/* Menu akun di navbar */
+.user-menu { position: relative; }
+.user-menu summary { display: flex; align-items: center; gap: .5rem; cursor: pointer; list-style: none; font-weight: 600; }
+.user-menu summary::-webkit-details-marker { display: none; }
+.user-menu__avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--primary); color: #fff; display: grid; place-items: center; font-size: .85rem; }
+.user-menu__panel { position: absolute; right: 0; top: calc(100% + .5rem); min-width: 190px; background: var(--card); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 8px 24px rgba(15, 23, 42, .12); padding: .5rem; display: grid; gap: .1rem; }
+.user-menu__panel small { padding: .25rem .6rem .5rem; border-bottom: 1px solid var(--line); margin-bottom: .25rem; word-break: break-all; }
+.user-menu__panel a, .user-menu__panel button { display: block; width: 100%; text-align: left; padding: .5rem .6rem; border: 0; background: none; border-radius: 6px; font: inherit; color: var(--ink); cursor: pointer; }
+.user-menu__panel a:hover, .user-menu__panel button:hover { background: var(--bg); }
+.user-menu__panel button { color: var(--danger); }
+@media (max-width: 720px) { .user-menu__name { display: none; } }

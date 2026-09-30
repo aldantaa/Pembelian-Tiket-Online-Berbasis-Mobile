@@ -1,0 +1,8 @@
+.ticket { max-width: 420px; margin: 0 auto; background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+.ticket__head { background: var(--primary); color: #fff; padding: 1.25rem; }
+.ticket__head span { font-size: .85rem; opacity: .85; }
+.ticket__route { display: flex; justify-content: space-between; margin-top: 1rem; } .ticket__route small { display: block; opacity: .8; } .ticket__route strong { display: block; font-size: 1.15rem; }
+.ticket__body { padding: 1.25rem; } .ticket__body dl { display: grid; grid-template-columns: auto 1fr; gap: .4rem 1rem; margin-bottom: 1.25rem; font-size: .9rem; } .ticket__body dt { color: var(--muted); } .ticket__body dd { text-align: right; font-weight: 600; }
+.ticket__actions { display: flex; flex-wrap: wrap; gap: .5rem; padding: 0 1.25rem 1.25rem; }
+.ticket__notes { background: #eff6ff; margin: 0; padding: 1rem 1.25rem 1rem 2.25rem; font-size: .82rem; color: var(--muted); }
+@media print { .navbar, .footer, .stepper, .ticket__actions { display: none; } body { background: #fff; } }
