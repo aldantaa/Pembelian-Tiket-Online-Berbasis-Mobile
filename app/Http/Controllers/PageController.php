@@ -3,88 +3,63 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
-/**
- * Registrasi, login, logout, dan profil.
- * Sementara memakai session; ganti dengan Auth Laravel + tabel penumpang saat DB siap.
- */
 class PageController extends Controller
 {
-    public function register(Request $r)
+    public function login()
     {
-        return redirect()->route('login')->with('success', 'Akun berhasil dibuat. Silakan masuk.');
+        return view('auth.login');
     }
 
-    public function login(Request $r)
+    public function handleLogin(Request $request)
     {
-        $email = $r->input('email');
+        $request->validate([
+            'email'    => 'required|email',
+            'password' => 'required',
+        ]);
 
-        session(['user' => [
-            'name'  => session('user.name') ?? ucfirst(Str::before($email, '@')),
-            'email' => $email,
-            'phone' => session('user.phone', ''),
-        ]]);
-
-        return redirect()->route('schedules')->with('success', 'Berhasil masuk.');
+        return redirect()->route('schedules');
     }
 
-    public function logout()
+    public function register()
     {
-        session()->forget('user');
+        return view('auth.register');
+    }
 
-        return redirect()->route('login')->with('success', 'Anda telah keluar.');
+    public function handleRegister(Request $request)
+    {
+        $request->validate([
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|unique:users',
+            'password' => 'required|min:6|confirmed',
+        ]);
+
+        return redirect()->route('login')->with('success', 'Akun berhasil dibuat, silakan login!');
+    }
+
+    public function logout(Request $request)
+    {
+        $request->session()->flush();
+        return redirect()->route('login');
+    }
+
+    public function schedules()
+    {
+        return view('booking.schedules');
+    }
+
+    public function tickets()
+    {
+        return view('tickets.index');
+    }
+
+    public function showTicket($id)
+    {
+        return view('tickets.show', compact('id'));
     }
 
     public function profile()
     {
-        if (! session()->has('user')) {
-            return redirect()->route('login')->with('error', 'Silakan masuk terlebih dahulu.');
-        }
-
-        return view('auth.profile', ['user' => session('user')]);
-    }
-
-    public function updateProfile(Request $r)
-    {
-        session(['user' => $r->only('name', 'email', 'phone')]);
-
-        return redirect()->route('profile')->with('success', 'Profil berhasil diperbarui.');
-    }
-
-     public function schedules(Request $r)
-    {
-        return view('booking.schedules', [
-            'buses' => $r->filled('from') ? $this->buses() : [],
-            'query' => $r->only('from', 'to', 'date'),
-        ]);
-    }
-
-    public function ticket(Request $r)
-    {
-        return view('tickets.show', $this->bookingContext($r) + ['code' => 'MH90801128']);
-    }
-
-
-    private function buses(): array
-    {
-        return [
-            ['id' => 1, 'name' => 'Sinar Jaya',    'class' => 'Executive',       'price' => 350000, 'depart' => '08:00', 'arrive' => '18:00', 'facilities' => ['WiFi', 'AC', 'USB Charger', 'Snack'], 'available' => 15, 'capacity' => 40],
-            ['id' => 2, 'name' => 'Harapan Jaya',  'class' => 'Super Executive', 'price' => 350000, 'depart' => '14:00', 'arrive' => '00:00', 'facilities' => ['WiFi', 'AC', 'Toilet'],               'available' => 22, 'capacity' => 40],
-            ['id' => 3, 'name' => 'Rosalia Indah', 'class' => 'Executive',       'price' => 320000, 'depart' => '20:00', 'arrive' => '06:00', 'facilities' => ['AC', 'USB Charger'],                 'available' => 9,  'capacity' => 40],
-        ];
-    }
-
-    private function findBus(int $id): array
-    {
-        return collect($this->buses())->firstWhere('id', $id) ?? $this->buses()[0];
-    }
-    
-    private function bookingContext(Request $r): array
-    {
-        $bus   = $this->findBus((int) $r->query('bus', 1));
-        $seats = array_values(array_filter(explode(',', $r->query('seats', 'H1,H2'))));
-
-        return ['bus' => $bus, 'seats' => $seats, 'total' => $bus['price'] * count($seats)];
+        return view('auth.profile');
     }
 }

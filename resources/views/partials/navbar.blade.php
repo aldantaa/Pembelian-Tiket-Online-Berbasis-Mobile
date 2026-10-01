@@ -3,7 +3,7 @@
         @include('partials.logo')
         <nav class="navbar__menu">
             <a href="{{ route('schedules') }}" class="{{ request()->routeIs('schedules') ? 'is-active' : '' }}">Cari tiket</a>
-            <a href="{{ route('tickets') }}" class="{{ request()->routeIs('tickets') ? 'is-active' : '' }}">Tiket saya</a>
+            <a href="{{ route('tickets.index') }}">Tiket saya</a>
 
             @if (session()->has('user'))
                 @include('partials.user-menu')
@@ -13,3 +13,5 @@
         </nav>
     </div>
 </header>
+
+
