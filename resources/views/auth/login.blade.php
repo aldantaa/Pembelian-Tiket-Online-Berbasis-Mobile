@@ -10,6 +10,7 @@
         @csrf
         @include('partials.input', ['label' => 'Email', 'name' => 'email', 'type' => 'email', 'placeholder' => 'nama@email.com'])
         @include('partials.input', ['label' => 'Password', 'name' => 'password', 'type' => 'password'])
+        <a href="{{ route('password.request') }}" class="auth__forgot">Lupa password?</a>
         <button class="btn btn--block">Masuk</button>
     </form>
     <p class="auth__alt">Belum punya akun? <a href="{{ route('register') }}">Daftar sekarang</a></p>
