@@ -5,7 +5,7 @@
             <a href="{{ route('schedules') }}" class="{{ request()->routeIs('schedules') ? 'is-active' : '' }}">Cari tiket</a>
             <a href="{{ route('tickets') }}" class="{{ request()->routeIs('tickets') ? 'is-active' : '' }}">Tiket saya</a>
 
-            @if (session()->has('user'))
+            @auth
                 @include('partials.user-menu')
             @else
                 <a href="{{ route('login') }}" class="btn btn--sm">Masuk</a>
