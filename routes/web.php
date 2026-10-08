@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\AuthController;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,7 +15,7 @@ Route::get('/', [PageController::class, 'login'])->name('home.login');
 
 // Alur Login
 Route::get('/login', [PageController::class, 'login'])->name('login');
-Route::post('/login', [PageController::class, 'handleLogin'])->name('login.post');
+Route::post('/login', [AuthController::class, 'login']);
 
 // Alur Lupa Password
 Route::get('/forgotpassword', [PageController::class, 'forgotPasswordForm'])->name('password.request');
@@ -22,7 +23,7 @@ Route::post('/forgotpassword', [PageController::class, 'forgotPasswordForm'])->n
 
 // Alur Register
 Route::get('/register', [PageController::class, 'register'])->name('register');
-Route::post('/register', [PageController::class, 'handleRegister'])->name('register.post');
+Route::post('/register', [AuthController::class, 'register'])->name('register.post');
 
 // Alur Logout
 Route::post('/logout', [PageController::class, 'logout'])->name('logout');
