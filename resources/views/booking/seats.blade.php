@@ -8,6 +8,9 @@
 <form method="GET" action="{{ route('passenger') }}" class="seat-page" data-price="{{ $bus['price'] }}">
     <input type="hidden" name="bus" value="{{ $bus['id'] }}">
     <input type="hidden" name="seats" id="seatsInput">
+    <input type="hidden" name="from" value="{{ $query['from'] ?? '' }}">
+    <input type="hidden" name="to" value="{{ $query['to'] ?? '' }}">
+    <input type="hidden" name="date" value="{{ $query['date'] ?? '' }}">
 
     <div class="card seat-map">
         <div class="seat-map__driver">Pengemudi</div>

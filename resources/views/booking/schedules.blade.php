@@ -18,7 +18,7 @@
     </div>
     <div class="grid">
         @foreach ($buses as $bus)
-            @include('partials.bus-card', ['bus' => $bus])
+            @include('partials.buscard', ['bus' => $bus])
         @endforeach
     </div>
 @else
