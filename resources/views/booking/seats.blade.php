@@ -8,14 +8,12 @@
 @section('content')
     @include('partials.stepper', ['active' => 2])
 
-    <!-- Form utama untuk memilih kursi -->
-    <form method="GET" action="{{ route('passenger') }}" class="seat-page" data-price="{{ $schedule->price }}">
-
-        <!-- Mengubah $bus['id'] menjadi $schedule->id -->
-        <input type="hidden" name="schedule_id" value="{{ $schedule->id }}">
-
-        <!-- Input hidden ini biasanya diisi melalui JavaScript saat user mengklik kursi -->
-        <input type="hidden" name="seats" id="seatsInput">
+<form method="GET" action="{{ route('passenger') }}" class="seat-page" data-price="{{ $bus['price'] }}">
+    <input type="hidden" name="bus" value="{{ $bus['id'] }}">
+    <input type="hidden" name="seats" id="seatsInput">
+    <input type="hidden" name="from" value="{{ $query['from'] ?? '' }}">
+    <input type="hidden" name="to" value="{{ $query['to'] ?? '' }}">
+    <input type="hidden" name="date" value="{{ $query['date'] ?? '' }}">
 
         <div class="section-title">
             <h2>Pilih Kursi Anda</h2>

@@ -20,10 +20,8 @@
         <span class="muted">{{ request('from') ?? 'Semua Asal' }} → {{ request('to') ?? 'Semua Tujuan' }}</span>
     </div>
     <div class="grid">
-        <!-- Melakukan looping pada variabel $schedules -->
-        @foreach ($schedules as $schedule)
-            <!-- Mengirimkan data jadwal (berubah dari 'bus' ke 'schedule') ke partials -->
-            @include('partials.bus-card', ['schedule' => $schedule])
+        @foreach ($buses as $bus)
+            @include('partials.buscard', ['bus' => $bus])
         @endforeach
     </div>
 @else
