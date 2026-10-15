@@ -20,7 +20,7 @@
         <span class="muted">{{ request('from') ?? 'Semua Asal' }} → {{ request('to') ?? 'Semua Tujuan' }}</span>
     </div>
     <div class="grid">
-        @foreach ($buses as $bus)
+        @foreach ($schedules as $bus)
             @include('partials.buscard', ['bus' => $bus])
         @endforeach
     </div>

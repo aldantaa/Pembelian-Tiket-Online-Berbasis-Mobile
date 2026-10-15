@@ -3,15 +3,15 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-// Tambahkan use model di bawah ini untuk menghilangkan peringatan kuning
 use App\Models\Schedule;
 use App\Models\Seat;
+use App\Models\Booking;
 
 class PageController extends Controller
 {
-    // =========================================================================
-    // 1. BAGIAN OTENTIKASI (LOGIN, REGISTER, LOGOUT)
-    // =========================================================================
+    // =====================================================
+    // 1. AUTENTIKASI
+    // =====================================================
 
     public function login()
     {
@@ -21,7 +21,7 @@ class PageController extends Controller
     public function handleLogin(Request $request)
     {
         $request->validate([
-            'email'    => 'required|email',
+            'email' => 'required|email',
             'password' => 'required',
         ]);
 
@@ -36,12 +36,13 @@ class PageController extends Controller
     public function handleRegister(Request $request)
     {
         $request->validate([
-            'name'     => 'required|string|max:255',
-            'email'    => 'required|email|unique:users',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users',
             'password' => 'required|min:6|confirmed',
         ]);
 
-        return redirect()->route('login')->with('success', 'Akun berhasil dibuat, silakan login!');
+        return redirect()->route('login')
+            ->with('success', 'Akun berhasil dibuat, silakan login!');
     }
 
     public function forgotPasswordForm()
@@ -52,56 +53,74 @@ class PageController extends Controller
     public function logout(Request $request)
     {
         $request->session()->flush();
+
         return redirect()->route('login');
     }
 
-
-    // =========================================================================
-    // 2. BAGIAN PEMESANAN (JADWAL, KURSI, PENUMPANG)
-    // =========================================================================
+    // =====================================================
+    // 2. JADWAL DAN PEMILIHAN KURSI
+    // =====================================================
 
     public function showSchedules()
     {
-        // Mengambil semua data jadwal dari database
+        // Filter jadwal merupakan bagian KF-03.
+        // Untuk saat ini perilaku yang sudah ada dipertahankan.
         $schedules = Schedule::all();
+
         return view('booking.schedules', compact('schedules'));
     }
 
     public function showSeatsBySchedule($schedule_id)
     {
-         // Mencari jadwal berdasarkan ID, dan mengambil kursi yang terkait
-         $schedule = Schedule::findOrFail($schedule_id);
-         $seats = Seat::where('schedule_id', $schedule_id)->get();
+    Booking::releaseExpired(); // baris baru: lepas kursi dari pesanan yang kedaluwarsa
 
-         return view('booking.seats', compact('schedule', 'seats'));
+    $schedule = Schedule::findOrFail($schedule_id);
+
+    // Kursi diurutkan A1, A2, A3, A4, B1, dan seterusnya.
+    $seats = Seat::where('schedule_id', $schedule->id)
+        ->orderByRaw(
+            'LEFT(seat_number, 1),
+            CAST(SUBSTRING(seat_number, 2) AS UNSIGNED)'
+        )
+        ->get();
+
+    // Hitung kondisi kursi dari tabel seats.
+    $totalSeats = $seats->count();
+
+    $availableSeats = $seats
+        ->where('is_booked', false)
+        ->count();
+
+    return view('booking.seats', [
+        'schedule' => $schedule,
+        'seats' => $seats,
+        'totalSeats' => $totalSeats,
+        'availableSeats' => $availableSeats,
+        ]);
     }
 
     public function passenger(Request $request)
     {
-        // Halaman ini akan memproses data penumpang setelah memilih kursi
+        // Pemrosesan data penumpang merupakan KF-05.
         return view('booking.passenger');
     }
 
-
-    // =========================================================================
-    // 3. BAGIAN DASBOR PENGGUNA (RIWAYAT TIKET & PROFIL)
-    // =========================================================================
+    // =====================================================
+    // 3. RIWAYAT TIKET DAN PROFIL
+    // =====================================================
 
     public function tickets()
     {
-        // Menampilkan daftar riwayat tiket yang pernah dibeli pengguna
         return view('tickets.index');
     }
 
     public function showTicket($id)
     {
-        // Menampilkan detail dari satu tiket spesifik (misal: barcode, e-tiket)
         return view('tickets.show', compact('id'));
     }
 
     public function profile()
     {
-        // Menampilkan halaman pengaturan profil pengguna (ubah nama, ubah password)
         return view('auth.profile');
     }
 }
