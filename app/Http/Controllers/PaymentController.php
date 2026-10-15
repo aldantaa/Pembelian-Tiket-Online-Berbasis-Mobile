@@ -7,6 +7,7 @@ use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Auth;
 
 class PaymentController extends Controller
 {
@@ -17,7 +18,7 @@ class PaymentController extends Controller
         'qris'            => 'QRIS',
     ];
 
-    // Halaman pembayaran
+    // KF-06: halaman pembayaran
     public function show(string $booking_code)
     {
         Booking::releaseExpired();
@@ -40,7 +41,7 @@ class PaymentController extends Controller
         ]);
     }
 
-    // Proses pembayaran: buat/perbarui catatan pembayaran berstatus pending
+    // KF-06: proses pembayaran -> catatan pembayaran berstatus pending
     public function pay(Request $request, string $booking_code)
     {
         Booking::releaseExpired();
@@ -73,20 +74,79 @@ class PaymentController extends Controller
         return redirect()->route('payment.confirmation', $booking_code);
     }
 
-    // KF-07: sementara placeholder
+    // KF-07: halaman konfirmasi (status pembayaran + e-ticket)
     public function confirmation(string $booking_code)
     {
+        Booking::releaseExpired();
+
+        $bookings = $this->ownBookings($booking_code);
+        $payment = Payment::where('booking_code', $booking_code)->first();
+
+        if (! $payment) {
+            return redirect()->route('payment.show', $booking_code);
+        }
+
+        return view('payment.confirmation', [
+            'booking_code' => $booking_code,
+            'bookings'     => $bookings,
+            'payment'      => $payment,
+            'schedule'     => $bookings->first()->schedule,
+        ]);
+    }
+
+    // KF-07: callback dari payment gateway (tanpa login, dijaga token rahasia)
+    public function callback(Request $request)
+    {
+        $token = (string) config('services.payment.callback_token');
+
+        abort_unless(
+            $token !== '' && hash_equals($token, (string) $request->header('X-Callback-Token')),
+            403
+        );
+
+        $data = $request->validate([
+            'reference' => ['required', 'string'],
+            'status'    => ['required', Rule::in(['success', 'failed', 'expired'])],
+        ]);
+
+        $payment = Payment::where('reference', $data['reference'])->firstOrFail();
+
+        if ($data['status'] === 'success') {
+            $payment->markAsPaid();
+        } else {
+            $payment->markAsFailed($data['status']);
+        }
+
+        return response()->json(['message' => 'OK']);
+    }
+
+    // KF-07: simulasi bayar berhasil, HANYA environment local
+    public function simulate(string $booking_code)
+    {
+        abort_unless(app()->environment('local'), 404);
+
+        Booking::releaseExpired();
         $this->ownBookings($booking_code);
 
-        return view('payment.confirmation');
+      $payment = Payment::where('booking_code', $booking_code)
+        ->where('user_id', Auth::id())
+        ->firstOrFail();
+        $payment->markAsPaid();
+
+        return redirect()->route('payment.confirmation', $booking_code);
     }
 
     // Hanya pemilik pesanan yang boleh melihat/membayar
     private function ownBookings(string $booking_code)
     {
-        $bookings = Booking::with(['schedule', 'seat', 'passenger'])
+        $bookings = Booking::with([
+            'schedule',
+            'seat',
+            'passenger',
+            'ticket'
+        ])
             ->where('booking_code', $booking_code)
-            ->where('user_id', auth()->id())
+            ->where('user_id', Auth::id())
             ->get();
 
         abort_if($bookings->isEmpty(), 404);

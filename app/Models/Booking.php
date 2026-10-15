@@ -37,6 +37,12 @@ class Booking extends Model
     {
         return $this->hasOne(Passenger::class);
     }
+    
+    public function ticket(): HasOne
+    {
+    return $this->hasOne(Ticket::class);
+    }
+
 
     // Booking pending yang lewat batas bayar dibatalkan, kursinya dibuka lagi
     public static function releaseExpired(): void
@@ -50,4 +56,6 @@ class Booking extends Model
             Seat::whereKey($booking->seat_id)->update(['is_booked' => false]);
         }
     }
+
+
 }

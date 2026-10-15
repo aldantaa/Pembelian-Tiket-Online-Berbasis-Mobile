@@ -109,10 +109,12 @@ class PageController extends Controller
     // 3. RIWAYAT TIKET DAN PROFIL
     // =====================================================
 
+
     public function tickets()
     {
-        return view('tickets.index');
+        return redirect()->route('orders.index');
     }
+
 
     public function showTicket($id)
     {
