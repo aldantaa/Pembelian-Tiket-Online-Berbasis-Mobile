@@ -1,47 +1,49 @@
+@php
+    // Mengonversi $bus ke array jika berupa Model Eloquent
+    $busData = is_array($bus) ? $bus : $bus->toArray();
 
-<article class="card bus-card">
-    <div class="bus-card__head">
-        <div>
-            <h3>{{ $bus['name'] }}</h3>
-            <span class="badge">{{ $bus['class'] }}</span>
+    // Ambil data fasilitas (Mendukung key 'facilities' maupun 'fasilitas')
+    $facilities = $busData['facilities'] ?? $busData['fasilitas'] ?? [];
+
+    // Jika fasilitas berbentuk teks dipisah koma (contoh: "AC,WiFi,Toilet"), ubah ke array
+    if (is_string($facilities)) {
+        $facilities = array_map('trim', explode(',', $facilities));
+    }
+@endphp
+
+<div class="bus-card">
+    <div class="bus-card-header">
+        <h3>{{ $busData['nama_bus'] ?? $busData['name'] ?? 'MyHalte Bus' }}</h3>
+        <span class="price">Rp {{ number_format($busData['harga'] ?? 0, 0, ',', '.') }}</span>
+    </div>
+
+    <div class="bus-card-body">
+        <div class="route-info">
+            <div>
+                <small>Keberangkatan</small>
+                <strong>{{ $busData['kota_asal'] ?? $busData['origin'] ?? '-' }}</strong>
+                <span>{{ isset($busData['waktu_keberangkatan']) ? date('H:i', strtotime($busData['waktu_keberangkatan'])) : ($busData['depart'] ?? '-') }}</span>
+            </div>
+            <div class="arrow">➔</div>
+            <div>
+                <small>Tujuan</small>
+                <strong>{{ $busData['kota_tujuan'] ?? $busData['destination'] ?? '-' }}</strong>
+                <span>{{ isset($busData['waktu_tiba']) ? date('H:i', strtotime($busData['waktu_tiba'])) : ($busData['arrive'] ?? '-') }}</span>
+            </div>
         </div>
 
-        <div class="bus-card__price">
-            Rp {{ number_format($bus['price'], 0, ',', '.') }}
-            <small>per orang</small>
+        <div class="tags">
+            @foreach ($facilities as $f)
+                <span class="tag">{{ $f }}</span>
+            @endforeach
         </div>
     </div>
 
-    <div class="bus-card__time">
-        <strong>{{ $bus['depart'] }}</strong>
-        <span class="bus-card__line"></span>
-        <strong>{{ $bus['arrive'] }}</strong>
-    </div>
-
-    <div class="tags">
-        @foreach ($bus['facilities'] as $f)
-            <span class="tag">{{ $f }}</span>
-        @endforeach
-    </div>
-
-    <div class="bus-card__foot">
+    <div class="bus-card-foot">
         <span>
             Kursi tersedia:
-            <b class="text-ok">
-                {{ $bus['available'] }} / {{ $bus['capacity'] }}
-            </b>
+            <b class="text-ok">{{ $busData['kursi_tersedia'] ?? $busData['available'] ?? 0 }}</b> / {{ $busData['kapasitas'] ?? $busData['capacity'] ?? 40 }}
         </span>
-
-        <a
-            href="{{ route('seats', [
-                'id' => $bus['id'],
-                'from' => request('from'),
-                'to' => request('to'),
-                'date' => request('date'),
-            ]) }}"
-            class="btn btn--sm"
-        >
-            Pilih bus
-        </a>
+        <a href="{{ route('booking.seats', ['schedule_id' => $busData['id'] ?? 1]) }}" class="btn-select">Pilih Bus</a>
     </div>
-</article>
+</div>
