@@ -6,11 +6,7 @@
             <a href="{{ route('tickets.index') }}">Tiket saya</a>
 
             @auth
-controller
-          {{-- @include('partials.user-menu') --}}
-
                 @include('partials.usermenu')
- utama
             @else
                 <a href="{{ route('login') }}" class="btn btn--sm">Masuk</a>
             @endif
