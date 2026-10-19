@@ -9,3 +9,35 @@
 .seat-legend { display: flex; justify-content: center; gap: 1rem; margin-top: 1rem; font-size: .8rem; color: var(--muted); }
 .seat--legend { display: inline-block; width: 16px; height: 16px; vertical-align: middle; cursor: default; }
 @media (max-width: 720px) { .seat-page { grid-template-columns: 1fr; } }
+
+.seat-page > div:first-child { min-width: 0; }
+
+.seat-page .section-title { margin-bottom: .5rem; }
+
+.seat-page > div:first-child > p { margin: 0 0 1rem; }
+
+.seat-map { margin-top: .5rem; }
+
+.seat-page aside.card {
+    padding: 1.25rem;
+    position: sticky;
+    top: 1rem;
+}
+
+.seat-page aside.card p {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 0 0 .75rem;
+}
+
+.seat-page aside.card .btn {
+    width: 100%;
+    margin-top: .5rem;
+}
+
+.seat-page .section-title { display: flex; justify-content: space-between; align-items: baseline; }
+.seat-page .section-title .muted { font-size: .95rem; font-weight: 600; color: var(--ink); }
+
+.seat-info { display: flex; gap: .75rem; margin: 0 0 1rem; }
+.seat-info span { background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: .25rem .75rem; font-size: .8rem; color: var(--muted); }
