@@ -52,7 +52,9 @@ class PageController extends Controller
 
     public function logout(Request $request)
     {
-        $request->session()->flush();
+        auth()->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
         return redirect()->route('login');
     }
@@ -61,14 +63,42 @@ class PageController extends Controller
     // 2. JADWAL DAN PEMILIHAN KURSI
     // =====================================================
 
-    public function showSchedules()
-    {
-        // Filter jadwal merupakan bagian KF-03.
-        // Untuk saat ini perilaku yang sudah ada dipertahankan.
-        $schedules = Schedule::all();
 
-        return view('booking.schedules', compact('schedules'));
+public function showSchedules(Request $request)
+{
+    $query = Schedule::query();
+
+    // Filter berdasarkan kota asal jika diisi
+    if ($request->filled('from')) {
+        $query->whereRaw(
+            'LOWER(kota_asal) LIKE ?',
+            ['%' . strtolower(trim($request->from)) . '%']
+        );
     }
+
+    // Filter berdasarkan kota tujuan jika diisi
+    if ($request->filled('to')) {
+        $query->whereRaw(
+            'LOWER(kota_tujuan) LIKE ?',
+            ['%' . strtolower(trim($request->to)) . '%']
+        );
+    }
+
+    // Filter berdasarkan tanggal jika diisi
+    if ($request->filled('date')) {
+        $query->whereDate(
+            'waktu_keberangkatan',
+            $request->date
+        );
+    }
+
+    $schedules = $query
+        ->orderBy('waktu_keberangkatan')
+        ->get();
+
+    return view('booking.schedules', compact('schedules'));
+}
+
 
     public function showSeatsBySchedule($schedule_id)
     {

@@ -21,7 +21,7 @@ class OrderController extends Controller
             ->orderByDesc('created_at')
             ->get();
 
-        $orders = $bookings
+        $tickets = $bookings
             ->groupBy('booking_code')
             ->map(function ($items) {
                 $first = $items->first();
@@ -84,32 +84,53 @@ class OrderController extends Controller
             })
             ->values();
 
-        return view('orders.index', compact('orders'));
+        return view('tickets.index', compact('tickets'));
     }
 
     /**
      * Menampilkan detail satu pesanan.
      */
-    public function show(Request $request, string $booking_code)
-    {
-        Booking::releaseExpired();
+public function show(Request $request, string $booking_code)
+{
+    Booking::releaseExpired();
 
-        $bookings = Booking::query()
-            ->where('user_id', $request->user()->id)
-            ->where('booking_code', $booking_code)
-            ->with(['schedule', 'seat', 'passenger', 'ticket'])
-            ->orderBy('id')
-            ->get();
+    $bookings = Booking::query()
+        ->where('user_id', $request->user()->id)
+        ->where('booking_code', $booking_code)
+        ->with(['schedule', 'seat', 'passenger', 'ticket'])
+        ->orderBy('id')
+        ->get();
 
-        abort_if($bookings->isEmpty(), 404);
+    abort_if($bookings->isEmpty(), 404);
 
-        $schedule = $bookings->first()->schedule;
+    $first = $bookings->first();
+    $schedule = $first->schedule;
 
-        return view('orders.show', [
-            'bookingCode' => $booking_code,
-            'bookings' => $bookings,
-            'schedule' => $schedule,
-            'total' => $bookings->sum('price'),
-        ]);
-    }
+    return view('tickets.show', [
+        'bus' => [
+            'id' => $schedule?->id,
+            'name' => $schedule?->nama_bus ?? '-',
+            'class' => 'Reguler',
+            'depart' => $schedule?->waktu_keberangkatan?->format('H:i') ?? '-',
+            'arrive' => $schedule?->waktu_tiba?->format('H:i') ?? '-',
+            'price' => $schedule?->harga ?? 0,
+        ],
+        'query' => [
+            'from' => $schedule?->kota_asal ?? '-',
+            'to' => $schedule?->kota_tujuan ?? '-',
+            'date' => $schedule?->waktu_keberangkatan?->format('d-m-Y') ?? '-',
+        ],
+        'seats' => $bookings
+            ->map(fn ($booking) => $booking->seat?->seat_number)
+            ->filter()
+            ->values()
+            ->all(),
+        'code' => $booking_code,
+        'status' => $bookings->contains(
+            fn ($booking) => $booking->status === 'paid'
+        ) ? 'success' : $first->status,
+        'total' => $bookings->sum('price'),
+    ]);
+}
+
 }

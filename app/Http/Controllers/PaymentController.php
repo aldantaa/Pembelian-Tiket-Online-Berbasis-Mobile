@@ -30,14 +30,15 @@ class PaymentController extends Controller
             return redirect()->route('payment.confirmation', $booking_code);
         }
 
-        return view('payment.show', [
+        return view('booking.payment', [
             'booking_code' => $booking_code,
             'bookings'     => $bookings,
             'schedule'     => $first->schedule,
             'total'        => $bookings->sum('price'),
-            'status'       => $first->status,
-            'expiresAt'    => $first->expires_at,
-            'methods'      => self::METHODS,
+            'methods'      => collect(self::METHODS)
+        ->map(fn ($label, $key) => [$key, $label])
+        ->values()
+        ->all(),
         ]);
     }
 
@@ -75,24 +76,47 @@ class PaymentController extends Controller
     }
 
     // KF-07: halaman konfirmasi (status pembayaran + e-ticket)
-    public function confirmation(string $booking_code)
-    {
-        Booking::releaseExpired();
 
-        $bookings = $this->ownBookings($booking_code);
-        $payment = Payment::where('booking_code', $booking_code)->first();
+public function confirmation(string $booking_code)
+{
+    Booking::releaseExpired();
 
-        if (! $payment) {
-            return redirect()->route('payment.show', $booking_code);
-        }
+    $bookings = $this->ownBookings($booking_code);
+    $payment = Payment::where('booking_code', $booking_code)
+        ->first();
 
-        return view('payment.confirmation', [
-            'booking_code' => $booking_code,
-            'bookings'     => $bookings,
-            'payment'      => $payment,
-            'schedule'     => $bookings->first()->schedule,
-        ]);
+    if (! $payment) {
+        return redirect()->route('payment.show', $booking_code);
     }
+
+    $schedule = $bookings->first()->schedule;
+
+    return view('tickets.show', [
+        'bus' => [
+            'id'     => $schedule->id,
+            'name'   => $schedule->nama_bus,
+            'class'  => 'Reguler',
+            'depart' => $schedule->waktu_keberangkatan->format('H:i'),
+            'arrive' => $schedule->waktu_tiba
+                ? $schedule->waktu_tiba->format('H:i')
+                : '-',
+        ],
+        'query' => [
+            'from' => $schedule->kota_asal,
+            'to'   => $schedule->kota_tujuan,
+            'date' => $schedule->waktu_keberangkatan->format('Y-m-d'),
+        ],
+        'seats' => $bookings->map(
+            fn ($booking) => $booking->seat->seat_number
+        )->all(),
+        'code'   => $booking_code,
+        'status' => $payment->status === 'paid'
+            ? 'success'
+            : $payment->status,
+        'total'  => $bookings->sum('price'),
+    ]);
+}
+
 
     // KF-07: callback dari payment gateway (tanpa login, dijaga token rahasia)
     public function callback(Request $request)

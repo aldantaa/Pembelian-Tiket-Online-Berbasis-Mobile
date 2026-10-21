@@ -38,7 +38,6 @@ Route::post('/forgotpassword', [
 
 Route::get('/register', [PageController::class, 'register'])->name('register');
 Route::post('/register', [AuthController::class, 'register'])->name('register.post');
-
 Route::post('/logout', [PageController::class, 'logout'])->name('logout');
 
 
