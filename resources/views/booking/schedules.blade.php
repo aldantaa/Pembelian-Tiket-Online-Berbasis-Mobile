@@ -5,45 +5,26 @@
 @include('partials.stepper', ['active' => 1])
 
 <form method="GET" action="{{ route('schedules') }}" class="card search">
-    @include('partials.input', ['label' => 'Keberangkatan', 'name' => 'from', 'value' => request('from', '')])
-    @include('partials.input', ['label' => 'Tujuan', 'name' => 'to', 'value' => request('to', '')])
-    @include('partials.input', ['label' => 'Tanggal keberangkatan', 'name' => 'date', 'type' => 'date', 'value' => request('date', '')])
+    <!-- Mengganti $query['...'] dengan request('...') agar tidak error jika controller tidak mengirim $query -->
+    @include('partials.input', ['label' => 'Keberangkatan', 'name' => 'from', 'value' => request('from', 'Madiun')])
+    @include('partials.input', ['label' => 'Tujuan', 'name' => 'to', 'value' => request('to', 'Surabaya')])
+    @include('partials.input', ['label' => 'Tanggal keberangkatan', 'name' => 'date', 'type' => 'date', 'value' => request('date')])
     <button class="btn">Cari bus</button>
 </form>
 
-
-@if ($schedules->count() > 0)
-
+<!-- Mengganti pengecekan $buses menjadi $schedules -->
+@if (isset($schedules) && count($schedules) > 0)
     <div class="section-title">
-        <h2>
-            @if (request()->filled('from') ||
-                 request()->filled('to') ||
-                 request()->filled('date'))
-                {{ $schedules->count() }} bus tersedia
-            @else
-                Rekomendasi Jadwal Bus
-            @endif
-        </h2>
-
-        @if (request()->filled('from') || request()->filled('to'))
-            <span class="muted">
-                {{ request('from') ?: 'Semua kota' }}
-                →
-                {{ request('to') ?: 'Semua tujuan' }}
-            </span>
-        @endif
+        <!-- Mengubah $buses menjadi $schedules -->
+        <h2>{{ count($schedules) }} jadwal tersedia</h2>
+        <span class="muted">{{ request('from') ?? 'Semua Asal' }} → {{ request('to') ?? 'Semua Tujuan' }}</span>
     </div>
-
     <div class="grid">
         @foreach ($schedules as $bus)
             @include('partials.buscard', ['bus' => $bus])
         @endforeach
     </div>
-
 @else
-    <p class="empty">
-        Tidak ada jadwal bus yang sesuai dengan pencarian.
-    </p>
+    <p class="empty">Tidak ada jadwal bus yang tersedia.</p>
 @endif
-
 @endsection

@@ -91,13 +91,15 @@
                     Unduh E-Tiket
                 </button>
             @else
-                <a class="btn"
-   href="{{ route('orders.show', $code) }}">
-    Lihat Status Transaksi
-</a>
+                <a
+                    class="btn"
+                    href="{{ route('transaction', request()->query()) }}"
+                >
+                    Lihat Status Transaksi
+                </a>
             @endif
 
-            <a class="btn btn--ghost" href="{{ route('tickets.index') }}">
+            <a class="btn btn--ghost" href="{{ route('tickets') }}">
                 Lihat Riwayat
             </a>
 

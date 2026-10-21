@@ -23,7 +23,7 @@
         @forelse ($users as $u)
             <tr>
                 <td>{{ $u->id }}</td><td>{{ $u->name }}</td><td>{{ $u->email }}</td>
-                <td>{{ $u->created_at?->format('d M Y') }}</td>
+                <td>{{ $u->created_at ? \Carbon\Carbon::parse($u->created_at)->format('d M Y') : '-' }}</td>
                 <td class="row-actions">
                     <a class="btn btn--sm btn--ghost" href="{{ route('admin.users', ['edit' => $u->id]) }}">Ubah</a>
                     @include('partials.deletebutton', ['action' => route('admin.users.delete', $u->id), 'confirm' => 'Hapus pengguna ini?'])

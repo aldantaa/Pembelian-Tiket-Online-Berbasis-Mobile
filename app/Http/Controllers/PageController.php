@@ -52,7 +52,9 @@ class PageController extends Controller
 
     public function logout(Request $request)
     {
-        $request->session()->flush();
+        auth()->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
         return redirect()->route('login');
     }
@@ -61,7 +63,7 @@ class PageController extends Controller
     // 2. JADWAL DAN PEMILIHAN KURSI
     // =====================================================
 
-    
+
 public function showSchedules(Request $request)
 {
     $query = Schedule::query();
