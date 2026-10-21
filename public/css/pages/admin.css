@@ -1,0 +1,41 @@
+[hidden] { display: none !important; }
+.admin__nav, .filters, .tabs { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: 1rem; }
+.admin__nav a, .filters a, .tabs a { padding: .35rem .9rem; border: 1px solid var(--line); border-radius: 99px; font-size: .85rem; color: var(--muted); background: var(--card); }
+.admin__nav a.is-active, .filters a.is-active, .tabs a.is-active { background: var(--ink); border-color: var(--ink); color: #fff; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: .75rem; margin-bottom: 1rem; }
+.stat small { display: block; } .stat strong { font-size: 1.35rem; }
+.bars { display: flex; align-items: flex-end; gap: .6rem; height: 200px; padding-top: .5rem; }
+.bars__item { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: .3rem; }
+.bars__bar { width: 100%; max-width: 48px; background: var(--primary); border-radius: 6px 6px 0 0; min-height: 4px; }
+.card + .card, .form-grid + .card, .form-inline + .card { margin-top: 1rem; }
+.table-wrap { overflow-x: auto; }
+.table { width: 100%; border-collapse: collapse; font-size: .9rem; min-width: 560px; }
+.table th, .table td { padding: .6rem .5rem; border-bottom: 1px solid var(--line); text-align: left; vertical-align: middle; }
+.table th { color: var(--muted); font-weight: 600; font-size: .8rem; } .num { text-align: right !important; }
+.row-actions { display: flex; gap: .4rem; } .actions { display: flex; gap: .4rem; }
+.btn--danger { background: var(--danger); } .btn--danger:hover { background: #b91c1c; }
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0 .75rem; margin-bottom: 1rem; } .span-all { grid-column: 1 / -1; }
+.form-inline { margin-bottom: 1rem; max-width: 420px; }
+.notif { display: flex; gap: .75rem; margin-bottom: .6rem; cursor: default; } .notif p { margin: .15rem 0; font-size: .9rem; }
+.notif__dot { width: 10px; height: 10px; border-radius: 50%; background: var(--line); margin-top: .4rem; flex-shrink: 0; }
+.notif--unread { border-left: 3px solid var(--primary); cursor: pointer; } .notif--unread .notif__dot { background: var(--primary); }
+.text-right { text-align: right; } .text-right small { display: block; margin-top: .25rem; }
+.filters + .card { margin-top: 0; } .row-link + .row-link { margin-top: .75rem; }
+@media print { .admin__nav, .actions, .navbar, .footer { display: none; } }
+
+/* Avatar profil admin berbentuk lingkaran */
+.navbar__avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: #fff;
+    font-size: .85rem;
+    font-weight: 600;
+    line-height: 1;
+    flex-shrink: 0;
+}
