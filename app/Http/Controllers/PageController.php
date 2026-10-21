@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use App\Models\Schedule;
 use App\Models\Seat;
 use App\Models\Booking;
@@ -153,6 +155,35 @@ public function showSchedules(Request $request)
 
     public function profile()
     {
-        return view('auth.profile');
+        $user = Auth::user();
+
+        return view('auth.profile', compact('user'));
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $user = Auth::user();
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                Rule::unique('users', 'email')->ignore($user->id),
+            ],
+            'phone' => [
+                'nullable',
+                'string',
+                'max:20',
+                Rule::unique('users', 'phone')->ignore($user->id),
+            ],
+        ]);
+
+        $user->update($validated);
+
+        return redirect()
+            ->route('profile')
+            ->with('success', 'Profil berhasil diperbarui.');
     }
 }
