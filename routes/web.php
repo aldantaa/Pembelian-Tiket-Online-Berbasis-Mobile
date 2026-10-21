@@ -170,6 +170,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [PageController::class, 'profile'])
         ->name('profile');
 
+    Route::post('/profile', [PageController::class, 'updateProfile'])
+    ->name('profile.update');
+
     Route::get('/tickets', [PageController::class, 'tickets'])
         ->name('tickets.index');
 
