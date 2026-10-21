@@ -10,6 +10,7 @@ use App\Models\User;
 class AuthController extends Controller
 {
     // Masukkan fungsi login di sini
+
     public function login(Request $request)
     {
         $credentials = $request->validate([
@@ -19,6 +20,13 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
+
+            $user = Auth::user();
+
+            if ($user->role === 'admin') {
+                return redirect('/admin/dashboard');
+            }
+
             return redirect()->intended('/schedules');
         }
 
@@ -26,6 +34,7 @@ class AuthController extends Controller
             'email' => 'Email atau password yang Anda masukkan salah.',
         ])->onlyInput('email');
     }
+
 
     // Masukkan fungsi register di sini
     public function register(Request $request)
