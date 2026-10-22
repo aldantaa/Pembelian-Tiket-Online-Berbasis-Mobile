@@ -6,7 +6,7 @@
     <div class="user-menu__panel">
         <small>{{ auth()->user()->email }}</small>
         <a href="{{ route('profile') }}">Profil saya</a>
-        <a href="{{ route('tickets') }}">Tiket saya</a>
+        <a href="{{ route('tickets.index') }}">Tiket saya</a>
         <form method="POST" action="{{ route('logout') }}">
             @csrf
             <button type="submit">Keluar</button>
