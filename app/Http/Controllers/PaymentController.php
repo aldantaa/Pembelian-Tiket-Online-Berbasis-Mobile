@@ -110,7 +110,7 @@ public function confirmation(string $booking_code)
             fn ($booking) => $booking->seat->seat_number
         )->all(),
         'code'   => $booking_code,
-        'status' => $payment->status === 'paid'
+        'status' => $payment->status === 'success'
             ? 'success'
             : $payment->status,
         'total'  => $bookings->sum('price'),
