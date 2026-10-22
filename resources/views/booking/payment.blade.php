@@ -45,5 +45,17 @@
                 Bayar sekarang
             </button>
         </form>
+
+            @if (app()->environment('local'))
+        <form method="POST"
+            action="{{ route('payment.simulate', $booking_code) }}"
+            class="mt-3">
+            @csrf
+
+            <button type="submit" class="btn btn--block">
+                Simulasikan Pembayaran Berhasil (Lokal)
+            </button>
+        </form>
+    @endif
     </div>
 @endsection
