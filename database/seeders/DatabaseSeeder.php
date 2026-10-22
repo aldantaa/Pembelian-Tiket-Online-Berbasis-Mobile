@@ -5,11 +5,34 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\Schedule;
 use App\Models\Seat;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+use RuntimeException;
 
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        // Buat atau perbarui akun admin.
+        $password = env('ADMIN_SEED_PASSWORD');
+
+        if (empty($password)) {
+            throw new RuntimeException(
+                'ADMIN_SEED_PASSWORD belum diatur di file .env'
+            );
+        }
+
+        User::updateOrCreate(
+            ['email' => env('ADMIN_SEED_EMAIL', 'admin@myhalte.test')],
+            [
+                'name' => 'Administrator',
+                'phone' => null,
+                'password' => Hash::make($password),
+                'role' => 'admin',
+            ]
+        );
+
+        // Data jadwal bus.
         $schedules = [
             [
                 'nama_bus' => 'Kirana Express',
@@ -51,6 +74,11 @@ class DatabaseSeeder extends Seeder
                 [
                     'nama_bus' => $data['nama_bus'],
                     'harga' => $data['harga'],
+                    'waktu_tiba' => null,
+                    'kapasitas' => 40,
+                    'kursi_tersedia' => 40,
+                    'fasilitas' => 'AC',
+                    'status' => 'scheduled',
                 ]
             );
 
