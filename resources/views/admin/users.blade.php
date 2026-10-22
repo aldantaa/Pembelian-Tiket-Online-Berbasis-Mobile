@@ -1,6 +1,10 @@
 @extends('layouts.admin')
+
 @section('title', 'Kelola Pengguna')
-@push('styles')<link rel="stylesheet" href="{{ asset('css/pages/admin.css') }}">@endpush
+
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('css/pages/admin.css') }}">
+@endpush
 
 @section('content')
 <h1>Data pengguna</h1>
