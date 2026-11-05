@@ -20,60 +20,66 @@ class PaymentController extends Controller
 
     // KF-06: halaman pembayaran
     public function show(string $booking_code)
-    {
-        Booking::releaseExpired();
+{
+    Booking::releaseExpired();
 
-        $bookings = $this->ownBookings($booking_code);
-        $first = $bookings->first();
+    $bookings = $this->ownBookings($booking_code);
+    $first = $bookings->first();
 
-        if ($first->status === 'paid') {
-            return redirect()->route('payment.confirmation', $booking_code);
-        }
-
-        return view('booking.payment', [
-            'booking_code' => $booking_code,
-            'bookings'     => $bookings,
-            'schedule'     => $first->schedule,
-            'total'        => $bookings->sum('price'),
-            'methods'      => collect(self::METHODS)
-        ->map(fn ($label, $key) => [$key, $label])
-        ->values()
-        ->all(),
-        ]);
-    }
-
-    // KF-06: proses pembayaran -> catatan pembayaran berstatus pending
-    public function pay(Request $request, string $booking_code)
-    {
-        Booking::releaseExpired();
-
-        $bookings = $this->ownBookings($booking_code);
-
-        if ($bookings->first()->status !== 'pending') {
-            return redirect()->route('payment.show', $booking_code)
-                ->with('error', 'Pesanan ini tidak bisa dibayar (sudah dibayar atau kedaluwarsa).');
-        }
-
-        $data = $request->validate([
-            'method' => ['required', Rule::in(array_keys(self::METHODS))],
-        ]);
-
-        $payment = Payment::updateOrCreate(
-            ['booking_code' => $booking_code],
-            [
-                'user_id' => $request->user()->id,
-                'method'  => $data['method'],
-                'amount'  => $bookings->sum('price'),
-                'status'  => 'pending',
-            ]
-        );
-
-        if (! $payment->reference) {
-            $payment->update(['reference' => 'PAY' . strtoupper(Str::random(10))]);
-        }
-
+    if ($first->status === 'paid') {
         return redirect()->route('payment.confirmation', $booking_code);
     }
+
+    return view('booking.payment', [
+        'booking_code' => $booking_code,
+        'bookings'     => $bookings,
+        'schedule'     => $first->schedule,
+        'total'        => $bookings->sum('price'),
+        'methods'      => collect(self::METHODS)
+            ->map(fn ($label, $key) => [$key, $label])
+            ->values()
+            ->all(),
+    ]);
+}
+
+    // KF-06: proses pembayaran -> catatan pembayaran berstatus pending
+
+public function pay(Request $request, string $booking_code)
+{
+    Booking::releaseExpired();
+
+    $bookings = $this->ownBookings($booking_code);
+    $first = $bookings->first();
+
+    if ($first->status !== 'pending') {
+        return redirect()
+            ->route('payment.show', $booking_code)
+            ->with('error', 'Pesanan tidak bisa dibayar karena sudah dibayar atau kedaluwarsa.');
+    }
+
+    $data = $request->validate([
+        'method' => ['required', Rule::in(array_keys(self::METHODS))],
+    ]);
+
+    $payment = Payment::updateOrCreate(
+        ['booking_code' => $booking_code],
+        [
+            'user_id' => $request->user()->id,
+            'method'  => $data['method'],
+            'amount'  => $bookings->sum('price'),
+            'status'  => 'pending',
+        ]
+    );
+
+    if (empty($payment->reference)) {
+        $payment->update([
+            'reference' => 'PAY' . strtoupper(Str::random(10)),
+        ]);
+    }
+
+    return redirect()->route('payment.show', $booking_code)
+        ->with('success', 'Metode pembayaran berhasil disimpan. Kamu dapat melanjutkan simulasi pembayaran lokal.');
+}
 
     // KF-07: halaman konfirmasi (status pembayaran + e-ticket)
 
@@ -83,7 +89,8 @@ public function confirmation(string $booking_code)
 
     $bookings = $this->ownBookings($booking_code);
     $payment = Payment::where('booking_code', $booking_code)
-        ->first();
+    ->where('user_id', Auth::id())
+    ->firstOrFail();
 
     if (! $payment) {
         return redirect()->route('payment.show', $booking_code);
@@ -146,19 +153,39 @@ public function confirmation(string $booking_code)
 
     // KF-07: simulasi bayar berhasil, HANYA environment local
     public function simulate(string $booking_code)
-    {
-        abort_unless(app()->environment('local'), 404);
+{
+    abort_unless(app()->environment('local'), 404);
 
-        Booking::releaseExpired();
-        $this->ownBookings($booking_code);
+    Booking::releaseExpired();
 
-      $payment = Payment::where('booking_code', $booking_code)
-        ->where('user_id', Auth::id())
-        ->firstOrFail();
-        $payment->markAsPaid();
+    $bookings = $this->ownBookings($booking_code);
+    $first = $bookings->first();
 
-        return redirect()->route('payment.confirmation', $booking_code);
+    if ($first->status !== 'pending') {
+        return redirect()
+            ->route('payment.show', $booking_code)
+            ->with('error', 'Pesanan sudah dibayar atau kedaluwarsa.');
     }
+
+    $payment = Payment::where('booking_code', $booking_code)
+        ->where('user_id', Auth::id())
+        ->first();
+
+    if (! $payment) {
+        return redirect()
+            ->route('payment.show', $booking_code)
+            ->with('error', 'Data pembayaran belum ditemukan. Pilih metode pembayaran terlebih dahulu.');
+    }
+
+    if ($payment->status !== 'pending') {
+        return redirect()
+            ->route('payment.confirmation', $booking_code);
+    }
+
+    $payment->markAsPaid();
+
+    return redirect()->route('payment.confirmation', $booking_code);
+}
 
     // Hanya pemilik pesanan yang boleh melihat/membayar
     private function ownBookings(string $booking_code)

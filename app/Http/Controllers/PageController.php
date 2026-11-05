@@ -110,11 +110,13 @@ public function showSchedules(Request $request)
 
     // Kursi diurutkan A1, A2, A3, A4, B1, dan seterusnya.
     $seats = Seat::where('schedule_id', $schedule->id)
-        ->orderByRaw(
-            'LEFT(seat_number, 1),
-            CAST(SUBSTRING(seat_number, 2) AS UNSIGNED)'
-        )
-        ->get();
+    ->orderByRaw(
+        'SUBSTR(seat_number, 1, 1) ASC'
+    )
+    ->orderByRaw(
+        'CAST(SUBSTR(seat_number, 2) AS INTEGER) ASC'
+    )
+    ->get();
 
     // Hitung kondisi kursi dari tabel seats.
     $totalSeats = $seats->count();
