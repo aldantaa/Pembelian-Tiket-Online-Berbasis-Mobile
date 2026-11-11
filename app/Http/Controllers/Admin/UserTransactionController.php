@@ -239,7 +239,7 @@ class UserTransactionController extends Controller
         $payments = \Illuminate\Support\Facades\DB::table('payments')
             ->join('bookings', 'payments.booking_code', '=', 'bookings.booking_code')
             ->join('schedules', 'bookings.schedule_id', '=', 'schedules.id')
-            ->where('payments.status', 'paid')
+            ->where('payments.status', 'success')
             ->select(
                 'payments.booking_code',
                 'payments.amount',
