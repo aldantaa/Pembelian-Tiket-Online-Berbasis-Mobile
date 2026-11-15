@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\ScheduleController;
 use App\Http\Controllers\Admin\OrderHistoryController;
 use App\Http\Controllers\Admin\AlertController;
+use App\Http\Controllers\Admin\BusController;
 
 /*
 |--------------------------------------------------------------------------
@@ -56,7 +57,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::get('/export', [UserTransactionController::class, 'export'])
     ->name('admin.export');
 
-    // Pengelolaan jadwal bus
+        // Pengelolaan jadwal bus
     Route::get('/schedules', [ScheduleController::class, 'index'])
         ->name('admin.schedules');
 
@@ -98,9 +99,24 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::get('/alerts', [AlertController::class, 'index'])
         ->name('admin.alerts');
 
-    // Riwayat transaksi (hanya menampilkan data)
+        // Riwayat transaksi (hanya menampilkan data)
     Route::get('/transactions', [UserTransactionController::class, 'transactions'])
         ->name('admin.transactions');
+
+    // Pengelolaan armada bus
+    Route::get('/buses', [BusController::class, 'index'])
+        ->name('admin.buses');
+
+    Route::post('/buses', [BusController::class, 'store'])
+        ->name('admin.buses.store');
+
+    Route::put('/buses/{id}', [BusController::class, 'update'])
+        ->whereNumber('id')
+        ->name('admin.buses.update');
+
+    Route::delete('/buses/{id}', [BusController::class, 'destroy'])
+        ->whereNumber('id')
+        ->name('admin.buses.delete');
 });
 
 
