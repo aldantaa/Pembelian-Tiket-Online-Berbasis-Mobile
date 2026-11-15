@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Bus;
+use App\Models\Alert;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+
 
 class ScheduleController extends Controller
 {
@@ -152,19 +154,68 @@ class ScheduleController extends Controller
     {
         $validated = $request->validate($this->scheduleRules());
 
-        $exists = DB::table('schedules')
-            ->where('id', $id)
-            ->exists();
-
-        abort_if(!$exists, 404, 'Jadwal tidak ditemukan.');
-
         $bus = Bus::where('nama_bus', $validated['bus'])
             ->where('status', 'aktif')
             ->firstOrFail();
 
         DB::transaction(function () use ($validated, $bus, $id) {
-            // Tambahkan hanya kursi yang belum tersedia.
-            // Kursi yang sudah dipesan tidak dihapus atau diubah.
+            $oldSchedule = DB::table('schedules')
+                ->where('id', $id)
+                ->lockForUpdate()
+                ->first();
+
+            abort_if(!$oldSchedule, 404, 'Jadwal tidak ditemukan.');
+
+            // Bandingkan data jadwal lama dan baru.
+            $changes = [];
+
+            $fields = [
+                'bus_id' => [
+                    'label' => 'Bus',
+                    'old' => $oldSchedule->bus_id,
+                    'new' => $bus->id,
+                ],
+                'nama_bus' => [
+                    'label' => 'Nama bus',
+                    'old' => $oldSchedule->nama_bus,
+                    'new' => $bus->nama_bus,
+                ],
+                'kota_asal' => [
+                    'label' => 'Kota asal',
+                    'old' => $oldSchedule->kota_asal,
+                    'new' => $validated['from'],
+                ],
+                'kota_tujuan' => [
+                    'label' => 'Kota tujuan',
+                    'old' => $oldSchedule->kota_tujuan,
+                    'new' => $validated['to'],
+                ],
+                'waktu_keberangkatan' => [
+                    'label' => 'Waktu keberangkatan',
+                    'old' => $oldSchedule->waktu_keberangkatan,
+                    'new' => $validated['depart'],
+                ],
+                'waktu_tiba' => [
+                    'label' => 'Waktu tiba',
+                    'old' => $oldSchedule->waktu_tiba,
+                    'new' => $validated['arrive'],
+                ],
+                'harga' => [
+                    'label' => 'Harga tiket',
+                    'old' => (float) $oldSchedule->harga,
+                    'new' => (float) $validated['price'],
+                ],
+            ];
+
+            foreach ($fields as $field) {
+                if ((string) $field['old'] !== (string) $field['new']) {
+                    $changes[] = $field['label']
+                        . ': ' . $field['old']
+                        . ' menjadi ' . $field['new'];
+                }
+            }
+
+            // Pertahankan kursi yang sudah ada.
             $this->generateSeats($id);
 
             $availableSeats = DB::table('seats')
@@ -172,6 +223,7 @@ class ScheduleController extends Controller
                 ->where('is_booked', false)
                 ->count();
 
+            // Simpan perubahan jadwal.
             DB::table('schedules')
                 ->where('id', $id)
                 ->update([
@@ -186,6 +238,26 @@ class ScheduleController extends Controller
                     'kursi_tersedia' => $availableSeats,
                     'updated_at' => now(),
                 ]);
+
+            // Kirim notifikasi jika memang ada perubahan.
+            if (!empty($changes)) {
+                $userIds = DB::table('bookings')
+                    ->where('schedule_id', $id)
+                    ->whereIn('status', ['pending', 'paid'])
+                    ->distinct()
+                    ->pluck('user_id');
+
+                foreach ($userIds as $userId) {
+                    Alert::create([
+                        'user_id' => $userId,
+                        'schedule_id' => $id,
+                        'type' => 'schedule_change',
+                        'title' => 'Perubahan jadwal perjalanan',
+                        'message' => 'Jadwal perjalanan Anda mengalami perubahan. '
+                            . implode('; ', $changes),
+                    ]);
+                }
+            }
         });
 
         return redirect()

@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\ScheduleController;
 use App\Http\Controllers\Admin\OrderHistoryController;
 use App\Http\Controllers\Admin\AlertController;
 use App\Http\Controllers\Admin\BusController;
+use App\Http\Controllers\AlertController as UserAlertController;
 
 /*
 |--------------------------------------------------------------------------
@@ -194,4 +195,16 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/tickets/{id}', [PageController::class, 'showTicket'])
         ->name('tickets.show');
+
+    // Notifikasi pengguna
+    Route::get('/alerts', [UserAlertController::class, 'index'])
+        ->name('alerts.index');
+
+    Route::patch('/alerts/{id}/read', [UserAlertController::class, 'markAsRead'])
+        ->whereNumber('id')
+        ->name('alerts.read');
+
+    Route::patch('/alerts/read-all', [UserAlertController::class, 'markAllAsRead'])
+        ->name('alerts.read-all');
+
 });

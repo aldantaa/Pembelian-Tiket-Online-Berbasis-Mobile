@@ -2,13 +2,15 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Carbon\Carbon;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
 {
-    public function dashboard(Request $request)
+
+public function dashboard(Request $request)
     {
         $period = $request->query('period', 'harian');
 
@@ -16,14 +18,14 @@ class ReportController extends Controller
             $period = 'harian';
         }
 
-        $today = now()->toDateString();
-        $month = now()->format('Y-m');
+        $now = now();
 
+        // Ringkasan dashboard
         $totalUsers = DB::table('users')->count();
         $totalBookings = DB::table('bookings')->count();
 
         $totalRevenue = DB::table('payments')
-            ->where('status', 'paid')
+            ->where('status', 'success')
             ->sum('amount');
 
         $stats = [
@@ -37,72 +39,85 @@ class ReportController extends Controller
             ),
         ];
 
-        // Siapkan grafik dengan label yang tetap tersedia
-        // meskipun belum ada transaksi pembayaran.
-        if ($period === 'bulanan') {
-            $chart = [];
+        // Grafik pendapatan: 7 hari atau 6 bulan
+        $chart = [];
 
-            for ($i = 5; $i >= 0; $i--) {
-                $date = now()->startOfMonth()->subMonths($i);
+        if ($period === 'bulanan') {
+            $start = $now->copy()->startOfMonth()->subMonths(5);
+
+            for ($i = 0; $i < 6; $i++) {
+                $date = $start->copy()->addMonths($i);
                 $chart[$date->format('M Y')] = 0;
             }
 
             $payments = DB::table('payments')
-                ->where('status', 'paid')
+                ->where('status', 'success')
                 ->whereNotNull('paid_at')
-                ->where('paid_at', '>=', now()->startOfMonth()->subMonths(5))
-                ->selectRaw("DATE_FORMAT(paid_at, '%Y-%m') as periode, SUM(amount) as total")
-                ->groupBy('periode')
-                ->get();
+                ->where('paid_at', '>=', $start)
+                ->where('paid_at', '<=', $now)
+                ->get(['paid_at', 'amount']);
 
             foreach ($payments as $payment) {
-                $date = \Carbon\Carbon::createFromFormat(
-                    'Y-m',
-                    $payment->periode
-                );
+                $label = Carbon::parse($payment->paid_at)->format('M Y');
 
-                $chart[$date->format('M Y')] = (float) $payment->total;
+                if (array_key_exists($label, $chart)) {
+                    $chart[$label] += (float) $payment->amount;
+                }
             }
         } else {
-            $chart = [];
+            $start = $now->copy()->startOfDay()->subDays(6);
 
-            for ($i = 6; $i >= 0; $i--) {
-                $date = now()->startOfDay()->subDays($i);
+            for ($i = 0; $i < 7; $i++) {
+                $date = $start->copy()->addDays($i);
                 $chart[$date->format('d M')] = 0;
             }
 
             $payments = DB::table('payments')
-                ->where('status', 'paid')
+                ->where('status', 'success')
                 ->whereNotNull('paid_at')
-                ->whereDate('paid_at', '>=', now()->startOfDay()->subDays(6))
-                ->selectRaw('DATE(paid_at) as periode, SUM(amount) as total')
-                ->groupBy('periode')
-                ->get();
+                ->where('paid_at', '>=', $start)
+                ->where('paid_at', '<=', $now)
+                ->get(['paid_at', 'amount']);
 
             foreach ($payments as $payment) {
-                $date = \Carbon\Carbon::parse($payment->periode);
-                $chart[$date->format('d M')] = (float) $payment->total;
+                $label = Carbon::parse($payment->paid_at)->format('d M');
+
+                if (array_key_exists($label, $chart)) {
+                    $chart[$label] += (float) $payment->amount;
+                }
             }
         }
 
-        $routes = DB::table('payments')
-            ->join(
-                'bookings',
-                'payments.booking_code',
-                '=',
-                'bookings.booking_code'
+        // Kelompokkan booking berdasarkan kode pesanan.
+        // Satu kode booking bisa memiliki beberapa kursi.
+        $bookingGroups = DB::table('bookings')
+            ->select(
+                'booking_code',
+                'schedule_id',
+                DB::raw('COUNT(*) as passengers')
             )
+            ->groupBy('booking_code', 'schedule_id');
+
+        // Setiap pembayaran hanya dihitung satu kali.
+        $routes = DB::table('payments')
+            ->joinSub($bookingGroups, 'booking_groups', function ($join) {
+                $join->on(
+                    'payments.booking_code',
+                    '=',
+                    'booking_groups.booking_code'
+                );
+            })
             ->join(
                 'schedules',
-                'bookings.schedule_id',
+                'booking_groups.schedule_id',
                 '=',
                 'schedules.id'
             )
-            ->where('payments.status', 'paid')
+            ->where('payments.status', 'success')
             ->select(
                 'schedules.kota_asal',
                 'schedules.kota_tujuan',
-                DB::raw('COUNT(DISTINCT bookings.booking_code) as passengers'),
+                DB::raw('SUM(booking_groups.passengers) as passengers'),
                 DB::raw('SUM(payments.amount) as revenue')
             )
             ->groupBy(
@@ -110,11 +125,11 @@ class ReportController extends Controller
                 'schedules.kota_tujuan'
             )
             ->get()
-            ->map(function ($row) {
+            ->map(function ($item) {
                 return [
-                    'route' => $row->kota_asal . ' - ' . $row->kota_tujuan,
-                    'passengers' => (int) $row->passengers,
-                    'revenue' => (float) $row->revenue,
+                    'route' => $item->kota_asal . ' - ' . $item->kota_tujuan,
+                    'passengers' => (int) $item->passengers,
+                    'revenue' => (float) $item->revenue,
                 ];
             });
 
@@ -125,6 +140,7 @@ class ReportController extends Controller
             'routes'
         ));
     }
+
 
     public function export()
     {
