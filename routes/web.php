@@ -127,13 +127,16 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
 |--------------------------------------------------------------------------
 */
 
+Route::middleware('not.admin')->group(function () {
 Route::get('/schedules', [PageController::class, 'showSchedules'])
-    ->name('schedules');
+->name('schedules');
 
 Route::get('/schedules/{schedule_id}/seats', [
-    PageController::class,
-    'showSeatsBySchedule',
+PageController::class,
+'showSeatsBySchedule',
 ])->whereNumber('schedule_id')->name('booking.seats');
+});
+
 
 
 /*
