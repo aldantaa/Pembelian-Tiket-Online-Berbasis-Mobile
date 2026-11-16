@@ -8,16 +8,22 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Schedule extends Model
 {
     protected $fillable = [
-        'nama_bus',
-        'kota_asal',
-        'kota_tujuan',
-        'waktu_keberangkatan',
-        'waktu_tiba',
-        'harga',
-        'kapasitas',
-        'kursi_tersedia',
-        'fasilitas',
+    'bus_id',
+    'nama_bus',
+    'kota_asal',
+    'kota_tujuan',
+    'waktu_keberangkatan',
+    'waktu_tiba',
+    'harga',
+    'kapasitas',
+    'kursi_tersedia',
+    'fasilitas',
     ];
+
+    public function bus()
+    {
+        return $this->belongsTo(Bus::class);
+    }
 
     protected function casts(): array
     {
