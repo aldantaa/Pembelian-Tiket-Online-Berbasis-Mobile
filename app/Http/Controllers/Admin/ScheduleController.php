@@ -8,6 +8,7 @@ use App\Models\Alert;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 
 class ScheduleController extends Controller
@@ -51,6 +52,10 @@ class ScheduleController extends Controller
                 'arrive' => $row->waktu_tiba,
                 'price' => $row->harga,
             ];
+
+            $buses = Bus::where('status', 'aktif')
+            ->orderBy('nama_bus')
+            ->get();
         }
 
         return view('admin.schedules', compact('schedules', 'editing'));
@@ -62,13 +67,7 @@ class ScheduleController extends Controller
     private function scheduleRules(): array
     {
         return [
-            'bus' => [
-                'required',
-                'string',
-                'max:100',
-                Rule::exists('buses', 'nama_bus')
-                    ->where(fn ($query) => $query->where('status', 'aktif')),
-            ],
+            'bus' => ['required', 'string', 'max:100'],
             'from' => ['required', 'string', 'max:255'],
             'to' => ['required', 'string', 'max:255', 'different:from'],
             'depart' => ['required', 'date'],
@@ -76,6 +75,32 @@ class ScheduleController extends Controller
             'price' => ['required', 'numeric', 'min:0'],
         ];
     }
+
+    /**
+ * Mengambil bus yang sudah ada atau membuat bus baru.
+ */
+private function resolveBus(string $namaBus): Bus
+{
+    $namaBus = trim($namaBus);
+
+    $bus = Bus::where('nama_bus', $namaBus)->first();
+
+    if ($bus) {
+        if ($bus->status !== 'aktif') {
+            throw ValidationException::withMessages([
+                'bus' => 'Bus tersebut tidak aktif.',
+            ]);
+        }
+
+        return $bus;
+    }
+
+    return Bus::create([
+        'nama_bus' => $namaBus,
+        'kapasitas' => 40,
+        'status' => 'aktif',
+    ]);
+}
 
     /**
      * Membuat daftar 40 kursi.
@@ -120,11 +145,9 @@ class ScheduleController extends Controller
     {
         $validated = $request->validate($this->scheduleRules());
 
-        $bus = Bus::where('nama_bus', $validated['bus'])
-            ->where('status', 'aktif')
-            ->firstOrFail();
+        DB::transaction(function () use ($validated) {
+            $bus = $this->resolveBus($validated['bus']);
 
-        DB::transaction(function () use ($validated, $bus) {
             $scheduleId = DB::table('schedules')->insertGetId([
                 'bus_id' => $bus->id,
                 'nama_bus' => $bus->nama_bus,
@@ -154,11 +177,8 @@ class ScheduleController extends Controller
     {
         $validated = $request->validate($this->scheduleRules());
 
-        $bus = Bus::where('nama_bus', $validated['bus'])
-            ->where('status', 'aktif')
-            ->firstOrFail();
-
-        DB::transaction(function () use ($validated, $bus, $id) {
+        DB::transaction(function () use ($validated, $id) {
+        $bus = $this->resolveBus($validated['bus']);
             $oldSchedule = DB::table('schedules')
                 ->where('id', $id)
                 ->lockForUpdate()
