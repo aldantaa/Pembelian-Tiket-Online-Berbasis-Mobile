@@ -1,0 +1,170 @@
+
+/* =====================================
+   NOTIFIKASI ADMIN
+===================================== */
+
+/* Judul halaman */
+.page-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.page-heading p {
+    color: var(--muted);
+    margin: .25rem 0 0;
+}
+
+/* Statistik notifikasi */
+.alert-stat {
+    display: flex;
+    flex-direction: column;
+    gap: .35rem;
+}
+
+.alert-stat strong {
+    font-size: 1.45rem;
+}
+
+/* Filter notifikasi */
+.alert-filters {
+    display: flex;
+    gap: .5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.alert-filters a {
+    padding: .45rem .85rem;
+    border: 1px solid var(--line);
+    border-radius: 99px;
+    text-decoration: none;
+    color: var(--muted);
+    background: var(--card);
+    font-size: .88rem;
+}
+
+.alert-filters a:hover,
+.alert-filters a.active {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: #fff;
+}
+
+/* Daftar notifikasi */
+.alert-list {
+    padding: 1rem;
+}
+
+.alert-item {
+    display: flex;
+    gap: .9rem;
+    align-items: flex-start;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--line);
+}
+
+.alert-item:last-child {
+    border-bottom: 0;
+}
+
+/* Ikon notifikasi */
+.alert-icon {
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: #f1f5f9;
+    font-size: 1.15rem;
+}
+
+/* Isi notifikasi */
+.alert-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.alert-body h3 {
+    font-size: 1rem;
+    margin: 0 0 .3rem;
+}
+
+.alert-body p {
+    margin: .2rem 0;
+    color: var(--muted);
+    font-size: .9rem;
+}
+
+/* Informasi tambahan */
+.alert-meta {
+    font-size: .8rem;
+    color: var(--muted);
+    margin-top: .45rem;
+}
+
+/* Label status */
+.alert-status {
+    display: inline-block;
+    padding: .2rem .55rem;
+    border-radius: 99px;
+    font-size: .76rem;
+    font-weight: 600;
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.alert-status.paid {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.alert-status.expired {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+/* Kondisi kosong */
+.alert-empty {
+    text-align: center;
+    padding: 2.5rem 1rem;
+}
+
+.alert-empty__icon {
+    font-size: 2rem;
+    margin-bottom: .5rem;
+}
+
+.alert-empty h2 {
+    margin: .25rem 0;
+}
+
+.alert-empty p {
+    color: var(--muted);
+    margin: 0;
+}
+
+/* Responsif */
+@media (max-width: 600px) {
+    .alert-list {
+        padding: .75rem;
+    }
+
+    .alert-item {
+        gap: .65rem;
+    }
+
+    .alert-icon {
+        width: 36px;
+        height: 36px;
+        flex-basis: 36px;
+    }
+
+    .alert-body h3 {
+        line-height: 1.5;
+    }
+}
