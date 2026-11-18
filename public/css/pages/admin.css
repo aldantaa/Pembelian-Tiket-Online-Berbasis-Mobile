@@ -39,3 +39,17 @@
     line-height: 1;
     flex-shrink: 0;
 }
+
+/* Perbaikan ikon pagination Laravel seluruh halaman admin */
+nav[role="navigation"] svg {
+    width: 16px !important;
+    height: 16px !important;
+    max-width: 16px !important;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+nav[role="navigation"] a,
+nav[role="navigation"] span {
+    font-size: 13px;
+}
