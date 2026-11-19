@@ -9,6 +9,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\Admin\UserTransactionController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\ScheduleController;
@@ -28,14 +29,26 @@ Route::get('/', [PageController::class, 'login'])->name('home.login');
 Route::get('/login', [PageController::class, 'login'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 
+// Permintaan tautan reset password
 Route::get('/forgotpassword', [
-    PageController::class,
-    'forgotPasswordForm',
+    PasswordResetController::class,
+    'showLinkRequestForm',
 ])->name('password.request');
 
 Route::post('/forgotpassword', [
-    PageController::class,
-    'forgotPasswordForm',
+    PasswordResetController::class,
+    'sendResetLinkEmail',
+])->name('password.email');
+
+// Form password baru dari tautan email
+Route::get('/reset-password/{token}', [
+    PasswordResetController::class,
+    'showResetForm',
+])->name('password.reset');
+
+Route::post('/reset-password', [
+    PasswordResetController::class,
+    'reset',
 ])->name('password.update');
 
 Route::get('/register', [PageController::class, 'register'])->name('register');

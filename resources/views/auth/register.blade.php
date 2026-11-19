@@ -10,7 +10,7 @@
         @csrf
         @include('partials.input', ['label' => 'Nama lengkap', 'name' => 'name', 'placeholder' => 'Nama lengkap Anda'])
         @include('partials.input', ['label' => 'Email', 'name' => 'email', 'type' => 'email', 'placeholder' => 'nama@email.com'])
-        @include('partials.input', ['label' => 'Nomor telepon', 'name' => 'no_hp', 'type' => 'tel', 'placeholder' => '08123456789'])
+        @include('partials.input', ['label' => 'Nomor telepon', 'name' => 'phone', 'type' => 'tel', 'placeholder' => '08123456789'])
         @include('partials.input', ['label' => 'Password', 'name' => 'password', 'type' => 'password'])
         @include('partials.input', ['label' => 'Konfirmasi password', 'name' => 'password_confirmation', 'type' => 'password'])
         <button class="btn btn--block">Daftar</button>
